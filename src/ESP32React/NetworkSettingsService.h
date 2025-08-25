@@ -129,7 +129,11 @@ class NetworkSettingsService : public StatefulService<NetworkSettings> {
     wireguard_config_t _wgConfig  = ESP_WIREGUARD_CONFIG_DEFAULT();
     wireguard_ctx_t    _wgContext = ESP_WIREGUARD_CONTEXT_DEFAULT();
     bool               _wgInitialized = false;
-    bool               _wgConnected   = false;
+    bool               _wgPeerUp      = false;
+    unsigned long      _wgLastPing    = 0;
+
+  public:
+    bool wireguardPeerUp() const { return _wgPeerUp; }
 #endif
 };
 

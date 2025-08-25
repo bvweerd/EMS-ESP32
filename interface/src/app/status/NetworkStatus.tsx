@@ -4,6 +4,7 @@ import GiteIcon from '@mui/icons-material/Gite';
 import RouterIcon from '@mui/icons-material/Router';
 import SettingsInputAntennaIcon from '@mui/icons-material/SettingsInputAntenna';
 import SettingsInputComponentIcon from '@mui/icons-material/SettingsInputComponent';
+import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import WifiIcon from '@mui/icons-material/Wifi';
 import {
   Avatar,
@@ -142,6 +143,18 @@ const NetworkStatus = () => {
             </Avatar>
           </ListItemAvatar>
           <ListItemText primary={LL.HOSTNAME()} secondary={data.hostname} />
+        </ListItem>
+        <Divider variant="inset" component="li" />
+        <ListItem>
+          <ListItemAvatar>
+            <Avatar sx={{ bgcolor: data.wireguard_connected ? theme.palette.success.main : theme.palette.error.main }}>
+              <VpnKeyIcon />
+            </Avatar>
+          </ListItemAvatar>
+          <ListItemText
+            primary={LL.WIREGUARD()}
+            secondary={data.wireguard_connected ? LL.CONNECTED(0) : LL.DISCONNECTED()}
+          />
         </ListItem>
         <Divider variant="inset" component="li" />
         {isWiFi(data) && (

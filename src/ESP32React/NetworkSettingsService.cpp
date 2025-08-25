@@ -125,13 +125,16 @@ void NetworkSettingsService::manageSTA() {
 
 void NetworkSettingsService::manageWireGuard() {
 #ifndef EMSESP_STANDALONE
+    constexpr unsigned long KEEPALIVE_INTERVAL = 60000; // 60 seconds
+
     if (!_state.wireguardEnabled || !WiFi.isConnected()) {
-        if (_wgConnected) {
+        if (_wgInitialized) {
             esp_wireguard_disconnect(&_wgContext);
-            _wgConnected   = false;
             _wgInitialized = false;
             emsesp::EMSESP::logger().info("WireGuard tunnel stopped");
         }
+        _wgPeerUp   = false;
+        _wgLastPing = 0;
         return;
     }
 
@@ -151,14 +154,29 @@ void NetworkSettingsService::manageWireGuard() {
         emsesp::EMSESP::logger().info("WireGuard configured for %s:%u", _state.wireguardEndpoint.c_str(), _state.wireguardPort);
     }
 
-    if (!_wgConnected) {
-        emsesp::EMSESP::logger().debug("Starting WireGuard tunnel");
+    bool wasUp = _wgPeerUp;
+    _wgPeerUp  = esp_wireguard_peer_is_up(&_wgContext) == ESP_OK;
+    if (_wgPeerUp != wasUp) {
+        emsesp::EMSESP::logger().info("WireGuard peer %s", _wgPeerUp ? "connected" : "disconnected");
+    }
+
+    if (!_wgPeerUp) {
         esp_err_t err = esp_wireguard_connect(&_wgContext);
         if (err == ESP_OK) {
-            emsesp::EMSESP::logger().info("WireGuard tunnel started");
-            _wgConnected = true;
+            emsesp::EMSESP::logger().debug("WireGuard connection initiated");
         } else if (err != ESP_ERR_RETRY) {
             emsesp::EMSESP::logger().warning("WireGuard failed to start (%d)", err);
+        }
+    } else {
+        unsigned long now = millis();
+        if (!_wgLastPing || static_cast<unsigned long>(now - _wgLastPing) >= KEEPALIVE_INTERVAL) {
+#ifdef ESP_WIREGUARD_PEER_PING
+            esp_wireguard_peer_ping(&_wgContext);
+#else
+            // Fallback: query peer status to keep connection alive
+            esp_wireguard_peer_is_up(&_wgContext);
+#endif
+            _wgLastPing = now;
         }
     }
 #endif
@@ -347,11 +365,9 @@ void NetworkSettingsService::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info) 
         }
 #ifndef EMSESP_STANDALONE
         if (_state.wireguardEnabled && _wgInitialized) {
-            if (_wgConnected) {
-                esp_wireguard_disconnect(&_wgContext);
-            }
+            esp_wireguard_disconnect(&_wgContext);
             _wgInitialized = false;
-            _wgConnected   = false;
+            _wgPeerUp      = false;
         }
 #endif
         break;
@@ -365,11 +381,9 @@ void NetworkSettingsService::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info) 
         emsesp::EMSESP::system_.has_ipv6(false);
 #ifndef EMSESP_STANDALONE
         if (_state.wireguardEnabled && _wgInitialized) {
-            if (_wgConnected) {
-                esp_wireguard_disconnect(&_wgContext);
-            }
+            esp_wireguard_disconnect(&_wgContext);
             _wgInitialized = false;
-            _wgConnected   = false;
+            _wgPeerUp      = false;
         }
 #endif
         break;

@@ -1,6 +1,7 @@
 #include "NetworkStatus.h"
 
 #include <emsesp.h>
+#include "NetworkSettingsService.h"
 
 #ifdef TASMOTA_SDK
 #include "lwip/dns.h"
@@ -87,6 +88,11 @@ void NetworkStatus::networkStatus(AsyncWebServerRequest * request) {
             root["dns_ip_2"] = dnsIP2.toString();
         }
     }
+
+#ifndef EMSESP_STANDALONE
+    auto *networkService = static_cast<NetworkSettingsService *>(emsesp::EMSESP::esp32React.getNetworkSettingsService());
+    root["wireguard_connected"] = networkService->wireguardPeerUp();
+#endif
 
     response->setLength();
     request->send(response);

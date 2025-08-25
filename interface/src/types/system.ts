@@ -25,6 +25,7 @@ export interface SystemStatus {
   ap_status: boolean;
   network_status: NetworkConnectionStatus;
   wifi_rssi: number;
+  wireguard_connected: boolean;
   build_flags: string;
   esp_platform: string;
   max_alloc_heap: number;

@@ -85,6 +85,7 @@ let system_status = {
   // network_status: 10, // ethernet connected
   // network_status: 6, // wifi disconnected
   wifi_rssi: -41,
+  wireguard_connected: false,
   esp_platform: 'ESP32S3',
   build_flags: 'DEMO',
   cpu_type: 'ESP32-S3',
@@ -492,7 +493,8 @@ const network_status = {
   dns_ip_1: '10.10.10.1',
   dns_ip_2: '0.0.0.0',
   hostname: 'ems-esp',
-  reconnect_count: 1
+  reconnect_count: 1,
+  wireguard_connected: false
 };
 const list_networks = {
   networks: [
