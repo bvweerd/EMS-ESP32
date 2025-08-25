@@ -5,6 +5,9 @@
 #include "FSPersistence.h"
 #include "HttpEndpoint.h"
 #include "JsonUtils.h"
+#ifndef EMSESP_STANDALONE
+#include <WireGuard-ESP32.h>
+#endif
 
 #ifndef EMSESP_STANDALONE
 #include <esp_wifi.h>
@@ -76,6 +79,12 @@ class NetworkSettings {
     bool    enableCORS;
     String  CORSOrigin;
 
+    bool     wireguardEnabled;
+    String   wireguardEndpoint;
+    uint16_t wireguardPort;
+    String   wireguardPrivateKey;
+    String   wireguardPeerPublicKey;
+
     // optional configuration for static IP address
     IPAddress localIP;
     IPAddress gatewayIP;
@@ -112,7 +121,11 @@ class NetworkSettingsService : public StatefulService<NetworkSettings> {
     const char * disconnectReason(uint8_t code);
     void         reconfigureWiFiConnection();
     void         manageSTA();
+    void         manageWireGuard();
     void         setWiFiPowerOnRSSI();
+#ifndef EMSESP_STANDALONE
+    WireGuard    _wireGuard;
+#endif
 };
 
 #endif
