@@ -12,6 +12,7 @@ import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import RouterIcon from '@mui/icons-material/Router';
 import SettingsInputAntennaIcon from '@mui/icons-material/SettingsInputAntenna';
 import TimerIcon from '@mui/icons-material/Timer';
+import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import WifiIcon from '@mui/icons-material/Wifi';
 import {
   Avatar,
@@ -312,6 +313,15 @@ const SystemStatus = () => {
             bgcolor={networkStatusHighlight()}
             label={LL.NETWORK(1)}
             text={networkStatus()}
+            to="/status/network"
+          />
+
+          <ListMenuItem
+            disabled={!me.admin}
+            icon={VpnKeyIcon}
+            bgcolor={activeHighlight(data.wireguard_connected)}
+            label={LL.WIREGUARD()}
+            text={data.wireguard_connected ? LL.CONNECTED(0) : LL.DISCONNECTED()}
             to="/status/network"
           />
 

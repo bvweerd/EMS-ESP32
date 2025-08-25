@@ -17,6 +17,7 @@
  */
 
 #include "emsesp.h"
+#include "../ESP32React/NetworkSettingsService.h"
 
 #ifndef EMSESP_STANDALONE
 #include <esp_ota_ops.h>
@@ -92,6 +93,11 @@ void WebStatusService::systemStatus(AsyncWebServerRequest * request) {
         root["wifi_rssi"] = WiFi.RSSI();
 #endif
     }
+
+#ifndef EMSESP_STANDALONE
+    auto *networkService = static_cast<NetworkSettingsService *>(EMSESP::esp32React.getNetworkSettingsService());
+    root["wireguard_connected"] = networkService->wireguardPeerUp();
+#endif
 
 #if defined(EMSESP_DEBUG)
 #ifdef EMSESP_TEST

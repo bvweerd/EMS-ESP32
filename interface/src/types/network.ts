@@ -35,6 +35,7 @@ export interface NetworkStatusType {
   dns_ip_2: string;
   hostname: string;
   reconnect_count: number;
+  wireguard_connected: boolean;
 }
 
 export interface NetworkSettingsType {
