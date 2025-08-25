@@ -60,6 +60,9 @@ void NetworkSettingsService::loop() {
     if (!_lastConnectionAttempt || static_cast<uint32_t>(currentMillis - _lastConnectionAttempt) >= WIFI_RECONNECTION_DELAY) {
         _lastConnectionAttempt = currentMillis;
         manageSTA();
+#ifndef EMSESP_STANDALONE
+        manageWireGuard();
+#endif
     }
 }
 
@@ -118,6 +121,44 @@ void NetworkSettingsService::manageSTA() {
     } else { // not connected but STA-mode active => disconnect
         reconfigureWiFiConnection();
     }
+}
+
+void NetworkSettingsService::manageWireGuard() {
+#ifndef EMSESP_STANDALONE
+    if (!_state.wireguardEnabled || !WiFi.isConnected()) {
+        if (_wgConnected) {
+            esp_wireguard_disconnect(&_wgContext);
+            _wgConnected   = false;
+            _wgInitialized = false;
+        }
+        return;
+    }
+
+    if (!_wgInitialized) {
+        _wgConfig.private_key = _state.wireguardPrivateKey.c_str();
+        _wgConfig.public_key  = _state.wireguardPeerPublicKey.c_str();
+        _wgConfig.address     = _state.wireguardAddress.c_str();
+        _wgConfig.netmask     = _state.wireguardNetmask.c_str();
+        _wgConfig.endpoint    = _state.wireguardEndpoint.c_str();
+        _wgConfig.port        = _state.wireguardPort;
+
+        if (esp_wireguard_init(&_wgConfig, &_wgContext) != ESP_OK) {
+            emsesp::EMSESP::logger().warning("WireGuard init failed");
+            return;
+        }
+        _wgInitialized = true;
+    }
+
+    if (!_wgConnected) {
+        esp_err_t err = esp_wireguard_connect(&_wgContext);
+        if (err == ESP_OK) {
+            emsesp::EMSESP::logger().info("WireGuard tunnel started");
+            _wgConnected = true;
+        } else if (err != ESP_ERR_RETRY) {
+            emsesp::EMSESP::logger().warning("WireGuard failed to start (%d)", err);
+        }
+    }
+#endif
 }
 
 // set the TxPower based on the RSSI (signal strength), picking the lowest value
@@ -301,6 +342,15 @@ void NetworkSettingsService::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info) 
             _lastConnectionAttempt = 0;
             _stopping              = false;
         }
+#ifndef EMSESP_STANDALONE
+        if (_state.wireguardEnabled && _wgInitialized) {
+            if (_wgConnected) {
+                esp_wireguard_disconnect(&_wgContext);
+            }
+            _wgInitialized = false;
+            _wgConnected   = false;
+        }
+#endif
         break;
 
     case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
@@ -310,8 +360,15 @@ void NetworkSettingsService::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info) 
                                          disconnectReason(info.wifi_sta_disconnected.reason),
                                          info.wifi_sta_disconnected.reason); // IDF 4.0
         emsesp::EMSESP::system_.has_ipv6(false);
-
-
+#ifndef EMSESP_STANDALONE
+        if (_state.wireguardEnabled && _wgInitialized) {
+            if (_wgConnected) {
+                esp_wireguard_disconnect(&_wgContext);
+            }
+            _wgInitialized = false;
+            _wgConnected   = false;
+        }
+#endif
         break;
 
     case ARDUINO_EVENT_WIFI_STA_GOT_IP:
@@ -321,6 +378,7 @@ void NetworkSettingsService::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info) 
                                       WiFi.getHostname(),
                                       emsesp::Helpers::render_value(result, ((double)(WiFi.getTxPower()) / 4), 1));
         mDNS_start();
+        manageWireGuard();
         break;
 
     case ARDUINO_EVENT_ETH_START:
@@ -408,6 +466,13 @@ void NetworkSettings::read(NetworkSettings & settings, JsonObject root) {
     root["enableCORS"]       = settings.enableCORS;
     root["CORSOrigin"]       = settings.CORSOrigin;
     root["tx_power"]         = settings.tx_power;
+    root["wireguard_enabled"]        = settings.wireguardEnabled;
+    root["wireguard_endpoint"]       = settings.wireguardEndpoint;
+    root["wireguard_port"]           = settings.wireguardPort;
+    root["wireguard_private_key"]    = settings.wireguardPrivateKey;
+    root["wireguard_peer_public_key"] = settings.wireguardPeerPublicKey;
+    root["wireguard_address"]        = settings.wireguardAddress;
+    root["wireguard_netmask"]        = settings.wireguardNetmask;
 
     // extended settings
     JsonUtils::writeIP(root, "local_ip", settings.localIP);
@@ -431,10 +496,17 @@ StateUpdateResult NetworkSettings::update(JsonObject root, NetworkSettings & set
     settings.staticIPConfig = root["static_ip_config"];
     settings.bandwidth20    = root["bandwidth20"];
     settings.tx_power       = static_cast<uint8_t>(root["tx_power"] | 0);
-    settings.nosleep        = root["nosleep"] | true;
-    settings.enableMDNS     = root["enableMDNS"] | true;
-    settings.enableCORS     = root["enableCORS"];
-    settings.CORSOrigin     = root["CORSOrigin"] | "*";
+    settings.nosleep            = root["nosleep"] | true;
+    settings.enableMDNS         = root["enableMDNS"] | true;
+    settings.enableCORS         = root["enableCORS"];
+    settings.CORSOrigin         = root["CORSOrigin"] | "*";
+    settings.wireguardEnabled    = root["wireguard_enabled"];
+    settings.wireguardEndpoint   = root["wireguard_endpoint"] | "";
+    settings.wireguardPort       = static_cast<uint16_t>(root["wireguard_port"] | 51820);
+    settings.wireguardPrivateKey = root["wireguard_private_key"] | "";
+    settings.wireguardPeerPublicKey = root["wireguard_peer_public_key"] | "";
+    settings.wireguardAddress    = root["wireguard_address"] | "";
+    settings.wireguardNetmask    = root["wireguard_netmask"] | "";
 
     // extended settings
     JsonUtils::readIP(root, "local_ip", settings.localIP);

@@ -41,5 +41,33 @@ export const createNetworkSettingsValidator = (
       ],
       dns_ip_1: IP_ADDRESS_VALIDATOR,
       dns_ip_2: IP_ADDRESS_VALIDATOR
-    })
-  });
+    }),
+      ...(networkSettings.wireguard_enabled && {
+        wireguard_endpoint: [
+          { required: true, message: 'WireGuard endpoint is required' }
+        ],
+        wireguard_port: [
+          {
+            type: 'number',
+            required: true,
+            min: 1,
+            max: 65535,
+            message: 'WireGuard port must be between 1 and 65535'
+          }
+        ],
+        wireguard_address: [
+          { required: true, message: 'WireGuard address is required' },
+          IP_ADDRESS_VALIDATOR
+        ],
+        wireguard_netmask: [
+          { required: true, message: 'WireGuard netmask is required' },
+          IP_ADDRESS_VALIDATOR
+        ],
+        wireguard_private_key: [
+          { required: true, message: 'WireGuard private key is required' }
+        ],
+        wireguard_peer_public_key: [
+          { required: true, message: 'WireGuard peer public key is required' }
+        ]
+      })
+    });

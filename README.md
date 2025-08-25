@@ -51,6 +51,7 @@ It requires a small circuit to interface with the EMS bus which can be purchased
 - A simple to use console, accessible via Serial/USB or Telnet for advanced operations and detailed monitoring
 - Native integration with Home Assistant, Domoticz, openHAB and Modbus
 - Easy setup and install with automatic updates
+- Optional WireGuard VPN client for secure remote access
 - Simulation of remote thermostats
 - Localized in 11 languages, and customizable to rename any device or sensor
 - Extendable by adding own custom EMS entities
@@ -65,6 +66,10 @@ Head over to [download.emsesp.org](https://download.emsesp.org) for instructions
 ## 📋&nbsp; **Documentation**
 
 Visit [emsesp.org](https://docs.emsesp.org) for more details on how to install and configure EMS-ESP. There is also a collection of Frequently Asked Questions and Troubleshooting tips with example customizations from the community.
+
+## 🔒 WireGuard VPN
+
+EMS-ESP includes an optional WireGuard client. Configure your address, netmask, endpoint, port and keys on the Network settings page of the web interface. Once enabled, the tunnel starts after WiFi connects and automatically reconnects if the connection drops.
 
 ## 💬&nbsp; **Getting Support**
 
