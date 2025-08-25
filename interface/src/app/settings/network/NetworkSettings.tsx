@@ -92,13 +92,7 @@ const NetworkSettings = () => {
             nosleep: false,
             enableMDNS: true,
             enableCORS: false,
-            CORSOrigin: '*',
-            wireguard_enabled: current_data?.wireguard_enabled ?? false,
-            wireguard_endpoint: current_data?.wireguard_endpoint ?? '',
-            wireguard_port: current_data?.wireguard_port ?? 51820,
-            wireguard_private_key: current_data?.wireguard_private_key ?? '',
-            wireguard_peer_public_key:
-              current_data?.wireguard_peer_public_key ?? ''
+            CORSOrigin: '*'
           })
         );
       }
@@ -296,64 +290,6 @@ const NetworkSettings = () => {
             onChange={updateFormValue}
             margin="normal"
           />
-        )}
-        <Typography sx={{ pt: 2 }} variant="h6" color="primary">
-          {LL.WIREGUARD()}
-        </Typography>
-        <BlockFormControlLabel
-          control={
-            <Checkbox
-              name="wireguard_enabled"
-              checked={data.wireguard_enabled}
-              onChange={updateFormValue}
-            />
-          }
-          label={LL.WIREGUARD_ENABLE()}
-        />
-        {data.wireguard_enabled && (
-          <>
-            <ValidatedTextField
-              fieldErrors={fieldErrors}
-              name="wireguard_endpoint"
-              label={LL.WIREGUARD_ENDPOINT()}
-              fullWidth
-              variant="outlined"
-              value={data.wireguard_endpoint}
-              onChange={updateFormValue}
-              margin="normal"
-            />
-            <ValidatedTextField
-              fieldErrors={fieldErrors}
-              name="wireguard_port"
-              label={LL.WIREGUARD_PORT()}
-              fullWidth
-              variant="outlined"
-              type="number"
-              value={data.wireguard_port}
-              onChange={updateFormValue}
-              margin="normal"
-            />
-            <ValidatedTextField
-              fieldErrors={fieldErrors}
-              name="wireguard_private_key"
-              label={LL.WIREGUARD_PRIVATE_KEY()}
-              fullWidth
-              variant="outlined"
-              value={data.wireguard_private_key}
-              onChange={updateFormValue}
-              margin="normal"
-            />
-            <ValidatedTextField
-              fieldErrors={fieldErrors}
-              name="wireguard_peer_public_key"
-              label={LL.WIREGUARD_PEER_PUBLIC_KEY()}
-              fullWidth
-              variant="outlined"
-              value={data.wireguard_peer_public_key}
-              onChange={updateFormValue}
-              margin="normal"
-            />
-          </>
         )}
         <BlockFormControlLabel
           control={

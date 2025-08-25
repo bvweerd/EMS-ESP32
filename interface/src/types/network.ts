@@ -54,11 +54,6 @@ export interface NetworkSettingsType {
   enableMDNS: boolean;
   enableCORS: boolean;
   CORSOrigin: string;
-  wireguard_enabled: boolean;
-  wireguard_endpoint: string;
-  wireguard_port: number;
-  wireguard_private_key: string;
-  wireguard_peer_public_key: string;
 }
 
 export interface WiFiNetworkList {
