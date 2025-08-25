@@ -130,6 +130,7 @@ void NetworkSettingsService::manageWireGuard() {
             esp_wireguard_disconnect(&_wgContext);
             _wgConnected   = false;
             _wgInitialized = false;
+            emsesp::EMSESP::logger().info("WireGuard tunnel stopped");
         }
         return;
     }
@@ -147,9 +148,11 @@ void NetworkSettingsService::manageWireGuard() {
             return;
         }
         _wgInitialized = true;
+        emsesp::EMSESP::logger().info("WireGuard configured for %s:%u", _state.wireguardEndpoint.c_str(), _state.wireguardPort);
     }
 
     if (!_wgConnected) {
+        emsesp::EMSESP::logger().debug("Starting WireGuard tunnel");
         esp_err_t err = esp_wireguard_connect(&_wgContext);
         if (err == ESP_OK) {
             emsesp::EMSESP::logger().info("WireGuard tunnel started");
@@ -455,24 +458,24 @@ void NetworkSettingsService::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info) 
 
 void NetworkSettings::read(NetworkSettings & settings, JsonObject root) {
     // connection settings
-    root["ssid"]             = settings.ssid;
-    root["bssid"]            = settings.bssid;
-    root["password"]         = settings.password;
-    root["hostname"]         = settings.hostname;
-    root["static_ip_config"] = settings.staticIPConfig;
-    root["bandwidth20"]      = settings.bandwidth20;
-    root["nosleep"]          = settings.nosleep;
-    root["enableMDNS"]       = settings.enableMDNS;
-    root["enableCORS"]       = settings.enableCORS;
-    root["CORSOrigin"]       = settings.CORSOrigin;
-    root["tx_power"]         = settings.tx_power;
-    root["wireguard_enabled"]        = settings.wireguardEnabled;
-    root["wireguard_endpoint"]       = settings.wireguardEndpoint;
-    root["wireguard_port"]           = settings.wireguardPort;
-    root["wireguard_private_key"]    = settings.wireguardPrivateKey;
+    root["ssid"]                      = settings.ssid;
+    root["bssid"]                     = settings.bssid;
+    root["password"]                  = settings.password;
+    root["hostname"]                  = settings.hostname;
+    root["static_ip_config"]          = settings.staticIPConfig;
+    root["bandwidth20"]               = settings.bandwidth20;
+    root["nosleep"]                   = settings.nosleep;
+    root["enableMDNS"]                = settings.enableMDNS;
+    root["enableCORS"]                = settings.enableCORS;
+    root["CORSOrigin"]                = settings.CORSOrigin;
+    root["tx_power"]                  = settings.tx_power;
+    root["wireguard_enabled"]         = settings.wireguardEnabled;
+    root["wireguard_endpoint"]        = settings.wireguardEndpoint;
+    root["wireguard_port"]            = settings.wireguardPort;
+    root["wireguard_private_key"]     = settings.wireguardPrivateKey;
     root["wireguard_peer_public_key"] = settings.wireguardPeerPublicKey;
-    root["wireguard_address"]        = settings.wireguardAddress;
-    root["wireguard_netmask"]        = settings.wireguardNetmask;
+    root["wireguard_address"]         = settings.wireguardAddress;
+    root["wireguard_netmask"]         = settings.wireguardNetmask;
 
     // extended settings
     JsonUtils::writeIP(root, "local_ip", settings.localIP);
@@ -489,24 +492,24 @@ StateUpdateResult NetworkSettings::update(JsonObject root, NetworkSettings & set
     auto ssid       = settings.ssid;
     auto tx_power   = settings.tx_power;
 
-    settings.ssid           = root["ssid"] | FACTORY_WIFI_SSID;
-    settings.bssid          = root["bssid"] | "";
-    settings.password       = root["password"] | FACTORY_WIFI_PASSWORD;
-    settings.hostname       = root["hostname"] | FACTORY_WIFI_HOSTNAME;
-    settings.staticIPConfig = root["static_ip_config"];
-    settings.bandwidth20    = root["bandwidth20"];
-    settings.tx_power       = static_cast<uint8_t>(root["tx_power"] | 0);
-    settings.nosleep            = root["nosleep"] | true;
-    settings.enableMDNS         = root["enableMDNS"] | true;
-    settings.enableCORS         = root["enableCORS"];
-    settings.CORSOrigin         = root["CORSOrigin"] | "*";
-    settings.wireguardEnabled    = root["wireguard_enabled"];
-    settings.wireguardEndpoint   = root["wireguard_endpoint"] | "";
-    settings.wireguardPort       = static_cast<uint16_t>(root["wireguard_port"] | 51820);
-    settings.wireguardPrivateKey = root["wireguard_private_key"] | "";
+    settings.ssid                   = root["ssid"] | FACTORY_WIFI_SSID;
+    settings.bssid                  = root["bssid"] | "";
+    settings.password               = root["password"] | FACTORY_WIFI_PASSWORD;
+    settings.hostname               = root["hostname"] | FACTORY_WIFI_HOSTNAME;
+    settings.staticIPConfig         = root["static_ip_config"];
+    settings.bandwidth20            = root["bandwidth20"];
+    settings.tx_power               = static_cast<uint8_t>(root["tx_power"] | 0);
+    settings.nosleep                = root["nosleep"] | true;
+    settings.enableMDNS             = root["enableMDNS"] | true;
+    settings.enableCORS             = root["enableCORS"];
+    settings.CORSOrigin             = root["CORSOrigin"] | "*";
+    settings.wireguardEnabled       = root["wireguard_enabled"];
+    settings.wireguardEndpoint      = root["wireguard_endpoint"] | "";
+    settings.wireguardPort          = static_cast<uint16_t>(root["wireguard_port"] | 51820);
+    settings.wireguardPrivateKey    = root["wireguard_private_key"] | "";
     settings.wireguardPeerPublicKey = root["wireguard_peer_public_key"] | "";
-    settings.wireguardAddress    = root["wireguard_address"] | "";
-    settings.wireguardNetmask    = root["wireguard_netmask"] | "";
+    settings.wireguardAddress       = root["wireguard_address"] | "";
+    settings.wireguardNetmask       = root["wireguard_netmask"] | "";
 
     // extended settings
     JsonUtils::readIP(root, "local_ip", settings.localIP);
