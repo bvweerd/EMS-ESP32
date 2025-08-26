@@ -25,6 +25,7 @@ uint8_t WebSettings::flags_ = 0;
 WebSettingsService::WebSettingsService(AsyncWebServer * server, FS * fs, SecurityManager * securityManager)
     : _httpEndpoint(WebSettings::read, WebSettings::update, this, server, EMSESP_SETTINGS_SERVICE_PATH, securityManager)
     , _fsPersistence(WebSettings::read, WebSettings::update, this, fs, EMSESP_SETTINGS_FILE) {
+    _fsPersistence.disableUpdateHandler();
     securityManager->addEndpoint(server, EMSESP_BOARD_PROFILE_SERVICE_PATH, AuthenticationPredicates::IS_AUTHENTICATED, [this](AsyncWebServerRequest * request) {
         board_profile(request);
     });
@@ -442,13 +443,23 @@ void WebSettingsService::onUpdate() {
 }
 
 void WebSettingsService::begin() {
+    if (!_fsPersistence.isEnabled()) {
+        return;
+    }
     _fsPersistence.readFromFS();
 
     WebSettings::reset_flags();
 }
 
 void WebSettingsService::save() {
+    if (!_fsPersistence.isEnabled()) {
+        return;
+    }
     _fsPersistence.writeToFS();
+}
+
+void WebSettingsService::enablePersistence() {
+    _fsPersistence.enableUpdateHandler();
 }
 
 // build the json profile to send back
