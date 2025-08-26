@@ -190,6 +190,10 @@ class System {
         developer_mode_ = developer_mode;
     }
 
+    bool   wireguard_enabled() const { return wireguard_client_.enabled(); }
+    bool   wireguard_connected() const { return wireguard_client_.connected(); }
+    time_t wireguard_latest_handshake() const { return wireguard_client_.latest_handshake(); }
+
     // Boolean Format API/MQTT
     uint8_t bool_format() {
         return bool_format_;

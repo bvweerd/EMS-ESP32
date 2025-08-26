@@ -24,6 +24,7 @@ import HardwareStatus from 'app/status/HardwareStatus';
 import MqttStatus from 'app/status/MqttStatus';
 import NTPStatus from 'app/status/NTPStatus';
 import NetworkStatus from 'app/status/NetworkStatus';
+import WireGuardStatus from 'app/status/WireGuardStatus';
 import Status from 'app/status/Status';
 import SystemLog from 'app/status/SystemLog';
 import Version from 'app/status/Version';
@@ -48,6 +49,7 @@ const AuthenticatedRouting = () => {
         <Route path="/status/mqtt" element={<MqttStatus />} />
         <Route path="/status/ntp" element={<NTPStatus />} />
         <Route path="/status/ap" element={<APStatus />} />
+        <Route path="/status/wireguard" element={<WireGuardStatus />} />
         <Route path="/status/network" element={<NetworkStatus />} />
         <Route path="/status/version" element={<Version />} />
 

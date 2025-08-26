@@ -14,6 +14,7 @@
 #include "NetworkSettingsService.h"
 #include "NetworkStatus.h"
 #include "WireGuardSettingsService.h"
+#include "WireGuardStatus.h"
 
 #include <Arduino.h>
 #include <AsyncJson.h>
@@ -87,6 +88,7 @@ class ESP32React {
     MqttStatus              _mqttStatus;
     AuthenticationService   _authenticationService;
     WireGuardSettingsService _wireguardSettingsService;
+    WireGuardStatus          _wireguardStatus;
 };
 
 #endif

@@ -10,3 +10,12 @@ export interface WireGuardSettingsType {
   persistent_keepalive: number;
 }
 
+export interface WireGuardStatusType {
+  enabled: boolean;
+  connected: boolean;
+  endpoint: string;
+  address: string;
+  persistent_keepalive: number;
+  latest_handshake?: number;
+}
+

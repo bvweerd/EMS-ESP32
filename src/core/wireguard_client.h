@@ -8,6 +8,7 @@
 #ifndef EMSESP_STANDALONE
 #include <esp_wireguard.h>
 #endif
+#include <uuid/log.h>
 
 class WireGuardSettings;
 
@@ -51,13 +52,21 @@ class WireGuardClient {
   public:
     void begin(const WireGuardSettings & settings);
     void loop();
+    bool   enabled() const { return enabled_; }
+    bool   connected() const { return connected_; }
+    time_t latest_handshake() const { return latest_handshake_; }
 
   private:
     wireguard_config_t config_ = ESP_WIREGUARD_CONFIG_DEFAULT();
     wireguard_ctx_t    ctx_    = ESP_WIREGUARD_CONTEXT_DEFAULT();
     bool               initialized_ = false;
+    bool               enabled_     = false;
+    bool               connected_   = false;
+    time_t             latest_handshake_ = 0;
     unsigned long      last_retry_  = 0;
     static constexpr unsigned long retry_interval_ = 5000; // ms
+
+    static uuid::log::Logger logger_;
 };
 
 } // namespace emsesp
@@ -71,6 +80,9 @@ class WireGuardClient {
     template <typename T>
     void begin(const T &) {}
     void loop() {}
+    bool   enabled() const { return false; }
+    bool   connected() const { return false; }
+    time_t latest_handshake() const { return 0; }
 };
 
 } // namespace emsesp

@@ -52,6 +52,9 @@ export interface SystemStatus {
   has_partition: boolean;
   status: number; // SystemStatusCodes which matches SYSTEM_STATUS in System.h
   temperature?: number;
+  wireguard_enabled: boolean;
+  wireguard_connected?: boolean;
+  wireguard_latest_handshake?: number;
 }
 
 export enum LogLevel {
