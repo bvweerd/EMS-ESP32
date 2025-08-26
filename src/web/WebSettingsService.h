@@ -135,6 +135,7 @@ class WebSettingsService : public StatefulService<WebSettings> {
 
     void begin();
     void save();
+    void enablePersistence();
 
   private:
     HttpEndpoint<WebSettings>  _httpEndpoint;

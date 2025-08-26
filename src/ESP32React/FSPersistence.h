@@ -124,6 +124,10 @@ class FSPersistence {
         }
     }
 
+    bool isEnabled() const {
+        return _updateHandlerId != 0;
+    }
+
   private:
     JsonStateReader<T>   _stateReader;
     JsonStateUpdater<T>  _stateUpdater;
