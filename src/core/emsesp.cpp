@@ -1623,21 +1623,21 @@ void EMSESP::start() {
 
 // start the file system
 #ifndef EMSESP_STANDALONE
-    if (!LittleFS.begin(true)) {
-        LOG_ERROR("LittleFS Mount Failed");
-        return;
+    bool fs_mounted = LittleFS.begin(true);
+    bool factory_settings;
+    if (!fs_mounted) {
+        LOG_ERROR("LittleFS mount failed. Settings persistence disabled.");
+        factory_settings = true;
+    } else {
+        File root       = LittleFS.open(EMSESP_SETTINGS_FILE);
+        factory_settings = !root;
+        if (!root) {
+            LOG_WARNING("No settings found on filesystem. Using factory settings.");
+        }
+        root.close();
+        webSettingsService.enablePersistence();
+        webSettingsService.begin();
     }
-#endif
-
-// do a quick scan of the filesystem to see if we a settings file in the /config folder
-// so we know if this is a new factory install or not
-#ifndef EMSESP_STANDALONE
-    File root             = LittleFS.open(EMSESP_SETTINGS_FILE);
-    bool factory_settings = !root;
-    if (!root) {
-        LOG_WARNING("No settings found on filesystem. Using factory settings.");
-    }
-    root.close();
 #else
     bool factory_settings = false;
 #endif
@@ -1670,8 +1670,6 @@ void EMSESP::start() {
     }
 
     LOG_DEBUG("NVS device information: %s", system_.getBBQKeesGatewayDetails().isEmpty() ? "not set" : system_.getBBQKeesGatewayDetails().c_str());
-
-    webSettingsService.begin(); // load EMS-ESP Application settings
 
     // do any system upgrades
     if (system_.check_upgrade(factory_settings)) {
