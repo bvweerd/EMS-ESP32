@@ -296,7 +296,6 @@ class EMSESP {
   protected:
     static uuid::log::Logger logger_;
 };
-
 } // namespace emsesp
 
 #endif

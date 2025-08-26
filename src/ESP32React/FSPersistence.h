@@ -5,12 +5,9 @@
 #include "FS.h"
 #include <uuid/log.h>
 
-// forward declaration to access logger without including emsesp.h
+// forward declaration for logger without including emsesp.h
 namespace emsesp {
-    class EMSESP {
-      public:
-        static uuid::log::Logger logger();
-    };
+    uuid::log::Logger logger();
 }
 
 template <class T>
@@ -28,7 +25,7 @@ class FSPersistence {
 
     void readFromFS() {
         if (_fs == nullptr || !_fs->exists("/")) {
-            emsesp::EMSESP::logger().err("File system not available, using defaults for %s", _filePath);
+            emsesp::logger().err("File system not available, using defaults for %s", _filePath);
             applyDefaults();
             return;
         }
@@ -62,7 +59,7 @@ class FSPersistence {
 #endif
         applyDefaults();
         if (!writeToFS()) {
-            emsesp::EMSESP::logger().err("Failed to create %s - file system not available", _filePath);
+            emsesp::logger().err("Failed to create %s - file system not available", _filePath);
         }
     }
 
@@ -117,7 +114,7 @@ class FSPersistence {
         if (!_updateHandlerId) {
             _updateHandlerId = _statefulService->addUpdateHandler([this] {
                 if (!writeToFS()) {
-                    emsesp::EMSESP::logger().err("Failed to persist %s - disabling handler", _filePath);
+                    emsesp::logger().err("Failed to persist %s - disabling handler", _filePath);
                     disableUpdateHandler();
                 }
             });
