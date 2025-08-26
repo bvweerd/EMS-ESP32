@@ -1,7 +1,8 @@
 import { useState } from 'react';
 
 import CancelIcon from '@mui/icons-material/Cancel';
-import { Button, Grid, Typography, Checkbox } from '@mui/material';
+import WarningIcon from '@mui/icons-material/Warning';
+import { Button, Grid, Checkbox } from '@mui/material';
 
 import * as WireGuardApi from 'api/wireguard';
 
@@ -63,10 +64,6 @@ const WireGuardSettings = () => {
       } catch (error) {
         setFieldErrors(error as ValidateFieldsError);
       }
-    };
-
-    const setCancel = async () => {
-      await loadData();
     };
 
     return (
@@ -173,23 +170,37 @@ const WireGuardSettings = () => {
             />
           </Grid>
         </Grid>
-
-        <ButtonRow
-          onClick={validateAndSubmit}
-          saving={saving}
-          onReset={setCancel}
-          ResetIcon={CancelIcon}
-        />
-        {blocker ? <BlockNavigation blocker={blocker} /> : null}
+        {dirtyFlags && dirtyFlags.length !== 0 && (
+          <ButtonRow>
+            <Button
+              startIcon={<CancelIcon />}
+              disabled={saving}
+              variant="outlined"
+              color="secondary"
+              type="submit"
+              onClick={loadData}
+            >
+              {LL.CANCEL()}
+            </Button>
+            <Button
+              startIcon={<WarningIcon color="warning" />}
+              disabled={saving}
+              variant="contained"
+              color="info"
+              type="submit"
+              onClick={validateAndSubmit}
+            >
+              {LL.APPLY_CHANGES(dirtyFlags.length)}
+            </Button>
+          </ButtonRow>
+        )}
       </>
     );
   };
 
   return (
     <SectionContent>
-      <Typography variant="h6" color="primary">
-        WireGuard
-      </Typography>
+      {blocker ? <BlockNavigation blocker={blocker} /> : null}
       {content()}
     </SectionContent>
   );
