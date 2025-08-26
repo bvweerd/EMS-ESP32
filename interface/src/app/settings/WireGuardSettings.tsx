@@ -180,7 +180,7 @@ const WireGuardSettings = () => {
           onReset={setCancel}
           ResetIcon={CancelIcon}
         />
-        <BlockNavigation block={blocker} />
+        {blocker ? <BlockNavigation blocker={blocker} /> : null}
       </>
     );
   };
