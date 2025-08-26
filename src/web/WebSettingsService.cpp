@@ -452,10 +452,9 @@ void WebSettingsService::begin() {
 }
 
 void WebSettingsService::save() {
-    if (!_fsPersistence.isEnabled()) {
-        return;
+    if (!_fsPersistence.writeToFS()) {
+        emsesp::EMSESP::logger().err("Failed to save web settings: file system not available");
     }
-    _fsPersistence.writeToFS();
 }
 
 void WebSettingsService::enablePersistence() {

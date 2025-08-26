@@ -3,6 +3,15 @@
 
 #include "StatefulService.h"
 #include "FS.h"
+#include <uuid/log.h>
+
+// forward declaration to access logger without including emsesp.h
+namespace emsesp {
+    class EMSESP {
+      public:
+        static uuid::log::Logger logger();
+    };
+}
 
 template <class T>
 class FSPersistence {
@@ -18,6 +27,12 @@ class FSPersistence {
     }
 
     void readFromFS() {
+        if (_fs == nullptr || !_fs->exists("/")) {
+            emsesp::EMSESP::logger().err("File system not available, using defaults for %s", _filePath);
+            applyDefaults();
+            return;
+        }
+
         File settingsFile = _fs->open(_filePath, "r");
 
         if (settingsFile) {
@@ -38,18 +53,24 @@ class FSPersistence {
             settingsFile.close();
         }
 
-// If we reach here we have not been successful in loading the config,
-// hard-coded emergency defaults are now applied.
+        // If we reach here we have not been successful in loading the config,
+        // hard-coded emergency defaults are now applied.
 #if defined(EMSESP_DEBUG)
         // Serial.println();
         // Serial.printf("Applying defaults to %s", _filePath);
         // Serial.println();
 #endif
         applyDefaults();
-        writeToFS(); // added to make sure the initial file is created
+        if (!writeToFS()) {
+            emsesp::EMSESP::logger().err("Failed to create %s - file system not available", _filePath);
+        }
     }
 
     bool writeToFS() {
+        if (_fs == nullptr || !_fs->exists("/")) {
+            return false;
+        }
+
         // create and populate a new json object
         JsonDocument jsonDocument;
         JsonObject   jsonObject = jsonDocument.to<JsonObject>();
@@ -94,7 +115,12 @@ class FSPersistence {
 
     void enableUpdateHandler() {
         if (!_updateHandlerId) {
-            _updateHandlerId = _statefulService->addUpdateHandler([&] { writeToFS(); });
+            _updateHandlerId = _statefulService->addUpdateHandler([this] {
+                if (!writeToFS()) {
+                    emsesp::EMSESP::logger().err("Failed to persist %s - disabling handler", _filePath);
+                    disableUpdateHandler();
+                }
+            });
         }
     }
 
