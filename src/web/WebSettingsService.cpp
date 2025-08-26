@@ -448,7 +448,9 @@ void WebSettingsService::begin() {
 }
 
 void WebSettingsService::save() {
-    _fsPersistence.writeToFS();
+    if (!_fsPersistence.writeToFS()) {
+        emsesp::EMSESP::logger().err("Failed to save web settings: file system not available");
+    }
 }
 
 // build the json profile to send back
