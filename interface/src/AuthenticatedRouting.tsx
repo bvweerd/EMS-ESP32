@@ -17,6 +17,7 @@ import NTPSettings from 'app/settings/NTPSettings';
 import Settings from 'app/settings/Settings';
 import Network from 'app/settings/network/Network';
 import Security from 'app/settings/security/Security';
+import WireGuardSettings from 'app/settings/WireGuardSettings';
 import APStatus from 'app/status/APStatus';
 import Activity from 'app/status/Activity';
 import HardwareStatus from 'app/status/HardwareStatus';
@@ -55,6 +56,7 @@ const AuthenticatedRouting = () => {
             <Route path="/settings" element={<Settings />} />
             <Route path="/settings/application" element={<ApplicationSettings />} />
             <Route path="/settings/mqtt" element={<MqttSettings />} />
+            <Route path="/settings/wireguard" element={<WireGuardSettings />} />
             <Route path="/settings/ntp" element={<NTPSettings />} />
             <Route path="/settings/ap" element={<APSettings />} />
             <Route path="/settings/modules" element={<Modules />} />

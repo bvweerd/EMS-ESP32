@@ -13,6 +13,7 @@
 #include "WiFiScanner.h"
 #include "NetworkSettingsService.h"
 #include "NetworkStatus.h"
+#include "WireGuardSettingsService.h"
 
 #include <Arduino.h>
 #include <AsyncJson.h>
@@ -51,6 +52,10 @@ class ESP32React {
         return &_mqttSettingsService;
     }
 
+    StatefulService<WireGuardSettings> * getWireGuardSettingsService() {
+        return &_wireguardSettingsService;
+    }
+
     MqttClient * getMqttClient() {
         return _mqttSettingsService.getMqttClient();
     }
@@ -81,6 +86,7 @@ class ESP32React {
     MqttSettingsService     _mqttSettingsService;
     MqttStatus              _mqttStatus;
     AuthenticationService   _authenticationService;
+    WireGuardSettingsService _wireguardSettingsService;
 };
 
 #endif

@@ -491,9 +491,12 @@ void System::start() {
     commands_init();     // console & api commands
     led_init(false);     // init LED
     button_init(false);  // the special button
-    network_init(false); // network
-    EMSESP::uart_init(); // start UART
-    syslog_init();       // start syslog
+    network_init(false);        // network
+    EMSESP::esp32React.getWireGuardSettingsService()->read([this](auto & settings) {
+        wireguard_client_.begin(settings); // start WireGuard
+    });
+    EMSESP::uart_init();        // start UART
+    syslog_init();              // start syslog
 }
 
 // button single click
@@ -601,6 +604,7 @@ void System::loop() {
     led_monitor();  // check status and report back using the LED
     system_check(); // check system health
     send_info_mqtt();
+    wireguard_client_.loop();
 #endif
 }
 

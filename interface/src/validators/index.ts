@@ -5,3 +5,4 @@ export * from './ntp';
 export * from './security';
 export * from './shared';
 export * from './network';
+export * from './wireguard';

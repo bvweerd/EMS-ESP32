@@ -14,7 +14,8 @@ ESP32React::ESP32React(AsyncWebServer * server, FS * fs)
     , _uploadFileService(server, &_securitySettingsService)
     , _mqttSettingsService(server, fs, &_securitySettingsService)
     , _mqttStatus(server, &_mqttSettingsService, &_securitySettingsService)
-    , _authenticationService(server, &_securitySettingsService) {
+    , _authenticationService(server, &_securitySettingsService)
+    , _wireguardSettingsService(server, fs, &_securitySettingsService) {
     //
     // Serve static web resources
     //
@@ -77,6 +78,7 @@ void ESP32React::begin() {
     _ntpSettingsService.begin();
     _mqttSettingsService.begin();
     _securitySettingsService.begin();
+    _wireguardSettingsService.begin();
 }
 
 void ESP32React::loop() {

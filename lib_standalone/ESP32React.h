@@ -19,6 +19,7 @@
 #define MQTT_SETTINGS_FILE "/config/mqttSettings.json"
 #define NETWORK_SETTINGS_FILE "/config/networkSettings.json"
 #define NTP_SETTINGS_FILE "/config/ntpSettings.json"
+#define WIREGUARD_SETTINGS_FILE "/config/wireguardSettings.json"
 #define EMSESP_SETTINGS_FILE "/config/emsespSettings.json"
 
 class DummySettings {
@@ -96,6 +97,7 @@ class DummySettingsService : public StatefulService<DummySettings> {
 #define MqttSettings DummySettings
 #define NTPSettings DummySettings
 #define APSettings DummySettings
+#define WireGuardSettings DummySettings
 
 class ESP32React {
   public:
@@ -142,6 +144,10 @@ class ESP32React {
     }
 
     StatefulService<DummySettings> * getAPSettingsService() {
+        return &_settings;
+    }
+
+    StatefulService<DummySettings> * getWireGuardSettingsService() {
         return &_settings;
     }
 

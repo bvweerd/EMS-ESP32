@@ -26,6 +26,7 @@
 #include "console.h"
 #include "mqtt.h"
 #include "telegram.h"
+#include "wireguard_client.h"
 
 #ifndef EMSESP_STANDALONE
 #include <esp_wifi.h>
@@ -386,6 +387,8 @@ class System {
 
     bool     ntp_connected_  = false;
     uint32_t ntp_last_check_ = 0;
+
+    WireGuardClient wireguard_client_;
 
     bool eth_present_ = false;
 
