@@ -83,6 +83,15 @@ void WebStatusService::systemStatus(AsyncWebServerRequest * request) {
 
     root["ap_status"] = EMSESP::esp32React.apStatus();
 
+    root["wireguard_enabled"] = EMSESP::system_.wireguard_enabled();
+    if (EMSESP::system_.wireguard_enabled()) {
+        root["wireguard_connected"] = EMSESP::system_.wireguard_connected();
+        time_t handshake = EMSESP::system_.wireguard_latest_handshake();
+        if (handshake) {
+            root["wireguard_latest_handshake"] = handshake;
+        }
+    }
+
     if (emsesp::EMSESP::system_.ethernet_connected()) {
         root["network_status"] = 10; // custom code #10 - ETHERNET_STATUS_CONNECTED
         root["wifi_rssi"]      = 0;

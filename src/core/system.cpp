@@ -49,6 +49,7 @@
 #endif
 
 #include <HTTPClient.h>
+#include <WiFi.h>
 
 #ifndef EMSESP_STANDALONE
 #include "esp_efuse.h"
@@ -488,10 +489,14 @@ void System::start() {
         hostname(networkSettings.hostname.c_str()); // sets the hostname
     });
 
-    commands_init();     // console & api commands
-    led_init(false);     // init LED
-    button_init(false);  // the special button
+    commands_init();    // console & api commands
+    led_init(false);    // init LED
+    button_init(false); // the special button
+    WiFi.onEvent([this](WiFiEvent_t event, WiFiEventInfo_t info) { WiFiEvent(event, info); });
     network_init(false); // network
+    EMSESP::esp32React.getWireGuardSettingsService()->read([this](auto & settings) {
+        wireguard_client_.begin(settings); // configure WireGuard
+    });
     EMSESP::uart_init(); // start UART
     syslog_init();       // start syslog
 }
@@ -601,6 +606,7 @@ void System::loop() {
     led_monitor();  // check status and report back using the LED
     system_check(); // check system health
     send_info_mqtt();
+    wireguard_client_.loop();
 #endif
 }
 
@@ -2021,15 +2027,47 @@ std::string System::reset_reason(uint8_t cpu) const {
 // set NTP status
 void System::ntp_connected(bool b) {
     if (b != ntp_connected_) {
+        ntp_connected_ = b;
         if (b) {
             LOG_INFO("NTP connected");
+            try_start_wireguard();
         } else {
             LOG_WARNING("NTP disconnected"); // if turned off report it
         }
     }
 
-    ntp_connected_  = b;
     ntp_last_check_ = b ? uuid::get_uptime_sec() : 0;
+}
+
+void System::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info) {
+    (void)info;
+    switch (event) {
+    case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
+    case ARDUINO_EVENT_ETH_DISCONNECTED:
+    case ARDUINO_EVENT_WIFI_STA_STOP:
+    case ARDUINO_EVENT_ETH_STOP:
+        wireguard_client_.stop();
+        break;
+    case ARDUINO_EVENT_WIFI_STA_GOT_IP:
+    case ARDUINO_EVENT_ETH_GOT_IP:
+        try_start_wireguard();
+        break;
+    default:
+        break;
+    }
+}
+
+void System::try_start_wireguard() {
+    if (!wireguard_client_.enabled()) {
+        return;
+    }
+    if (!ntp_connected_) {
+        return;
+    }
+    if (!network_connected()) {
+        return;
+    }
+    wireguard_client_.start();
 }
 
 // get NTP status

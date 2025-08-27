@@ -10,6 +10,7 @@ import SettingsEthernetIcon from '@mui/icons-material/SettingsEthernet';
 import SettingsInputAntennaIcon from '@mui/icons-material/SettingsInputAntenna';
 import TuneIcon from '@mui/icons-material/Tune';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
+import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import {
   Box,
   Button,
@@ -115,6 +116,14 @@ const Settings = () => {
           label="MQTT"
           text={LL.CONFIGURE('MQTT')}
           to="mqtt"
+        />
+
+        <ListMenuItem
+          icon={VpnKeyIcon}
+          bgcolor="#305070"
+          label="WireGuard"
+          text={LL.CONFIGURE('WireGuard')}
+          to="wireguard"
         />
 
         <ListMenuItem

@@ -13,6 +13,7 @@ import RouterIcon from '@mui/icons-material/Router';
 import SettingsInputAntennaIcon from '@mui/icons-material/SettingsInputAntenna';
 import TimerIcon from '@mui/icons-material/Timer';
 import WifiIcon from '@mui/icons-material/Wifi';
+import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import {
   Avatar,
   Button,
@@ -204,6 +205,14 @@ const SystemStatus = () => {
     }
   };
 
+  const wireguardStatusHighlight = () => {
+    return data.wireguard_connected ? theme.palette.success.main : theme.palette.error.main;
+  };
+
+  const wireguardStatus = () => {
+    return data.wireguard_connected ? LL.CONNECTED(0) : LL.DISCONNECTED();
+  };
+
   const activeHighlight = (value: boolean) =>
     value ? theme.palette.success.main : theme.palette.info.main;
 
@@ -341,6 +350,17 @@ const SystemStatus = () => {
             text={data.ap_status ? LL.ACTIVE() : LL.INACTIVE(0)}
             to="/status/ap"
           />
+
+          {data.wireguard_enabled && (
+            <ListMenuItem
+              disabled={!me.admin}
+              icon={VpnKeyIcon}
+              bgcolor={wireguardStatusHighlight()}
+              label="WireGuard"
+              text={wireguardStatus()}
+              to="/status/wireguard"
+            />
+          )}
 
           <ListMenuItem
             disabled={!me.admin}

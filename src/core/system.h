@@ -26,11 +26,13 @@
 #include "console.h"
 #include "mqtt.h"
 #include "telegram.h"
+#include "wireguard_client.h"
 
 #ifndef EMSESP_STANDALONE
 #include <esp_wifi.h>
 #include <ETH.h>
 #include <uuid/syslog.h>
+#include <WiFi.h>
 #endif
 
 #include <uuid/log.h>
@@ -187,6 +189,16 @@ class System {
 
     void developer_mode(bool developer_mode) {
         developer_mode_ = developer_mode;
+    }
+
+    bool wireguard_enabled() const {
+        return wireguard_client_.enabled();
+    }
+    bool wireguard_connected() const {
+        return wireguard_client_.connected();
+    }
+    time_t wireguard_latest_handshake() const {
+        return wireguard_client_.latest_handshake();
     }
 
     // Boolean Format API/MQTT
@@ -377,6 +389,9 @@ class System {
 
     int8_t wifi_quality(int8_t dBm);
 
+    void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info);
+    void try_start_wireguard();
+
     uint8_t  healthcheck_       = HEALTHCHECK_NO_NETWORK | HEALTHCHECK_NO_BUS; // start with all flags set, no wifi and no ems bus connection
     uint32_t last_system_check_ = 0;
 
@@ -386,6 +401,8 @@ class System {
 
     bool     ntp_connected_  = false;
     uint32_t ntp_last_check_ = 0;
+
+    WireGuardClient wireguard_client_;
 
     bool eth_present_ = false;
 
