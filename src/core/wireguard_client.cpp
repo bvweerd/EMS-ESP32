@@ -5,6 +5,7 @@
 #include "common.h"
 #include <esp_err.h>
 #include <lwip/ip_addr.h>
+#include <lwip/err.h>
 
 namespace emsesp {
 
@@ -40,7 +41,11 @@ void WireGuardClient::begin(const WireGuardSettings & settings) {
     } else if (err == ESP_ERR_INVALID_IP) {
         LOG_WARNING("WireGuard endpoint %s could not be resolved", config_.endpoint);
     } else if (err != ESP_OK) {
-        LOG_ERROR("WireGuard connect failed: %s", esp_err_to_name(err));
+        if (err < 0) {
+            LOG_ERROR("WireGuard connect failed: %s (%d) %s", esp_err_to_name(err), err, lwip_strerr((err_t)err));
+        } else {
+            LOG_ERROR("WireGuard connect failed: %s (%d)", esp_err_to_name(err), err);
+        }
     }
     initialized_      = true;
     connected_        = false;
@@ -73,7 +78,11 @@ void WireGuardClient::loop() {
             } else if (err == ESP_ERR_INVALID_IP) {
                 LOG_WARNING("WireGuard endpoint %s could not be resolved", config_.endpoint);
             } else if (err != ESP_OK) {
-                LOG_WARNING("WireGuard reconnect failed: %s", esp_err_to_name(err));
+                if (err < 0) {
+                    LOG_WARNING("WireGuard reconnect failed: %s (%d) %s", esp_err_to_name(err), err, lwip_strerr((err_t)err));
+                } else {
+                    LOG_WARNING("WireGuard reconnect failed: %s (%d)", esp_err_to_name(err), err);
+                }
             }
             last_retry_ = now;
         }
@@ -93,7 +102,11 @@ void WireGuardClient::loop() {
                 } else if (err == ESP_ERR_INVALID_IP) {
                     LOG_WARNING("WireGuard endpoint %s could not be resolved", config_.endpoint);
                 } else if (err != ESP_OK) {
-                    LOG_WARNING("WireGuard reconnect failed: %s", esp_err_to_name(err));
+                    if (err < 0) {
+                        LOG_WARNING("WireGuard reconnect failed: %s (%d) %s", esp_err_to_name(err), err, lwip_strerr((err_t)err));
+                    } else {
+                        LOG_WARNING("WireGuard reconnect failed: %s (%d)", esp_err_to_name(err), err);
+                    }
                 }
                 last_retry_ = now;
             }
