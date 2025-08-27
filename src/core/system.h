@@ -32,6 +32,7 @@
 #include <esp_wifi.h>
 #include <ETH.h>
 #include <uuid/syslog.h>
+#include <WiFi.h>
 #endif
 
 #include <uuid/log.h>
@@ -190,9 +191,15 @@ class System {
         developer_mode_ = developer_mode;
     }
 
-    bool   wireguard_enabled() const { return wireguard_client_.enabled(); }
-    bool   wireguard_connected() const { return wireguard_client_.connected(); }
-    time_t wireguard_latest_handshake() const { return wireguard_client_.latest_handshake(); }
+    bool wireguard_enabled() const {
+        return wireguard_client_.enabled();
+    }
+    bool wireguard_connected() const {
+        return wireguard_client_.connected();
+    }
+    time_t wireguard_latest_handshake() const {
+        return wireguard_client_.latest_handshake();
+    }
 
     // Boolean Format API/MQTT
     uint8_t bool_format() {
@@ -381,6 +388,9 @@ class System {
     void system_check();
 
     int8_t wifi_quality(int8_t dBm);
+
+    void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info);
+    void try_start_wireguard();
 
     uint8_t  healthcheck_       = HEALTHCHECK_NO_NETWORK | HEALTHCHECK_NO_BUS; // start with all flags set, no wifi and no ems bus connection
     uint32_t last_system_check_ = 0;

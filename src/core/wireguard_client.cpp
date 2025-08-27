@@ -13,9 +13,9 @@ uuid::log::Logger WireGuardClient::logger_{F_(wireguard), uuid::log::Facility::D
 
 void WireGuardClient::begin(const WireGuardSettings & settings) {
     enabled_ = settings.enabled;
-    if (!settings.enabled || settings.private_key.isEmpty() || settings.peer_public_key.isEmpty() || settings.endpoint.isEmpty()
-        || settings.address.isEmpty()) {
+    if (!settings.enabled || settings.private_key.isEmpty() || settings.peer_public_key.isEmpty() || settings.endpoint.isEmpty() || settings.address.isEmpty()) {
         LOG_INFO("WireGuard disabled or incomplete configuration");
+        enabled_ = false;
         return;
     }
 
@@ -27,6 +27,16 @@ void WireGuardClient::begin(const WireGuardSettings & settings) {
     config_.endpoint             = settings.endpoint.c_str();
     config_.port                 = settings.port;
     config_.persistent_keepalive = settings.persistent_keepalive;
+
+    initialized_      = false;
+    connected_        = false;
+    latest_handshake_ = 0;
+}
+
+void WireGuardClient::start() {
+    if (!enabled_ || initialized_) {
+        return;
+    }
 
     LOG_INFO("Starting WireGuard service");
     if (esp_wireguard_init(&config_, &ctx_) != ESP_OK) {
@@ -51,6 +61,18 @@ void WireGuardClient::begin(const WireGuardSettings & settings) {
     connected_        = false;
     latest_handshake_ = 0;
     last_retry_       = millis();
+}
+
+void WireGuardClient::stop() {
+    if (!initialized_) {
+        return;
+    }
+
+    esp_wireguard_disconnect(&ctx_);
+    initialized_      = false;
+    connected_        = false;
+    latest_handshake_ = 0;
+    LOG_INFO("WireGuard stopped");
 }
 
 void WireGuardClient::loop() {
