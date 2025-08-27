@@ -19,9 +19,15 @@ void WireGuardClient::begin(const WireGuardSettings & settings) {
         return;
     }
 
-    config_.private_key          = settings.private_key.c_str();
-    config_.public_key           = settings.peer_public_key.c_str();
-    config_.preshared_key        = settings.preshared_key.c_str();
+    // reset structures to known defaults before filling
+    config_ = ESP_WIREGUARD_CONFIG_DEFAULT();
+    ctx_    = ESP_WIREGUARD_CONTEXT_DEFAULT();
+
+    config_.private_key = settings.private_key.c_str();
+    config_.public_key  = settings.peer_public_key.c_str();
+    if (!settings.preshared_key.isEmpty()) {
+        config_.preshared_key = settings.preshared_key.c_str();
+    }
     config_.address              = settings.address.c_str();
     config_.netmask              = settings.netmask.c_str();
     config_.endpoint             = settings.endpoint.c_str();
