@@ -70,7 +70,7 @@ const WireGuardStatus = () => {
             </ListItemAvatar>
             <ListItemText
               primary="Last Handshake"
-              secondary={formatDateTime(new Date(data.latest_handshake * 1000))}
+              secondary={formatDateTime(new Date(data.latest_handshake * 1000).toISOString())}
             />
           </ListItem>
         )}

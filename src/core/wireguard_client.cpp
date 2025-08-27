@@ -120,25 +120,6 @@ void WireGuardClient::loop() {
     time_t last_handshake = 0;
     if (esp_wireguard_latest_handshake(&ctx_, &last_handshake) == ESP_OK) {
         latest_handshake_ = last_handshake;
-        if (time(nullptr) - last_handshake > (config_.persistent_keepalive * 3)) {
-            if (now - last_retry_ > retry_interval_) {
-                LOG_WARNING("WireGuard keepalive timeout, reconnecting");
-                ip_addr_set_zero(&config_.endpoint_ip);
-                esp_err_t err = esp_wireguard_connect(&ctx_);
-                if (err == ESP_ERR_RETRY) {
-                    LOG_INFO("WireGuard awaiting DNS resolution for %s", config_.endpoint);
-                } else if (err == ESP_ERR_INVALID_IP) {
-                    LOG_WARNING("WireGuard endpoint %s could not be resolved", config_.endpoint);
-                } else if (err != ESP_OK) {
-                    if (err < 0) {
-                        LOG_WARNING("WireGuard reconnect failed: %s (%d) %s", esp_err_to_name(err), err, lwip_strerr((err_t)err));
-                    } else {
-                        LOG_WARNING("WireGuard reconnect failed: %s (%d)", esp_err_to_name(err), err);
-                    }
-                }
-                last_retry_ = now;
-            }
-        }
     }
 }
 
