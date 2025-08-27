@@ -3,6 +3,8 @@
 #ifndef EMSESP_STANDALONE
 #include "../ESP32React/WireGuardSettingsService.h"
 #include "common.h"
+#include <esp_err.h>
+#include <lwip/ip_addr.h>
 
 namespace emsesp {
 
@@ -31,7 +33,15 @@ void WireGuardClient::begin(const WireGuardSettings & settings) {
         return;
     }
     LOG_INFO("Connecting to %s:%u", config_.endpoint, config_.port);
-    esp_wireguard_connect(&ctx_);
+    ip_addr_set_zero(&config_.endpoint_ip);
+    esp_err_t err = esp_wireguard_connect(&ctx_);
+    if (err == ESP_ERR_RETRY) {
+        LOG_INFO("WireGuard awaiting DNS resolution for %s", config_.endpoint);
+    } else if (err == ESP_ERR_INVALID_IP) {
+        LOG_WARNING("WireGuard endpoint %s could not be resolved", config_.endpoint);
+    } else if (err != ESP_OK) {
+        LOG_ERROR("WireGuard connect failed: %s", esp_err_to_name(err));
+    }
     initialized_      = true;
     connected_        = false;
     latest_handshake_ = 0;
@@ -56,7 +66,15 @@ void WireGuardClient::loop() {
     if (!up) {
         if (now - last_retry_ > retry_interval_) {
             LOG_INFO("Reconnecting WireGuard");
-            esp_wireguard_connect(&ctx_);
+            ip_addr_set_zero(&config_.endpoint_ip);
+            esp_err_t err = esp_wireguard_connect(&ctx_);
+            if (err == ESP_ERR_RETRY) {
+                LOG_INFO("WireGuard awaiting DNS resolution for %s", config_.endpoint);
+            } else if (err == ESP_ERR_INVALID_IP) {
+                LOG_WARNING("WireGuard endpoint %s could not be resolved", config_.endpoint);
+            } else if (err != ESP_OK) {
+                LOG_WARNING("WireGuard reconnect failed: %s", esp_err_to_name(err));
+            }
             last_retry_ = now;
         }
         return;
@@ -68,7 +86,15 @@ void WireGuardClient::loop() {
         if (time(nullptr) - last_handshake > (config_.persistent_keepalive * 3)) {
             if (now - last_retry_ > retry_interval_) {
                 LOG_WARNING("WireGuard keepalive timeout, reconnecting");
-                esp_wireguard_connect(&ctx_);
+                ip_addr_set_zero(&config_.endpoint_ip);
+                esp_err_t err = esp_wireguard_connect(&ctx_);
+                if (err == ESP_ERR_RETRY) {
+                    LOG_INFO("WireGuard awaiting DNS resolution for %s", config_.endpoint);
+                } else if (err == ESP_ERR_INVALID_IP) {
+                    LOG_WARNING("WireGuard endpoint %s could not be resolved", config_.endpoint);
+                } else if (err != ESP_OK) {
+                    LOG_WARNING("WireGuard reconnect failed: %s", esp_err_to_name(err));
+                }
                 last_retry_ = now;
             }
         }
