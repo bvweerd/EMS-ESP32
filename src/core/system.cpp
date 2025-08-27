@@ -2027,6 +2027,7 @@ std::string System::reset_reason(uint8_t cpu) const {
 // set NTP status
 void System::ntp_connected(bool b) {
     if (b != ntp_connected_) {
+        ntp_connected_ = b;
         if (b) {
             LOG_INFO("NTP connected");
             try_start_wireguard();
@@ -2035,7 +2036,6 @@ void System::ntp_connected(bool b) {
         }
     }
 
-    ntp_connected_  = b;
     ntp_last_check_ = b ? uuid::get_uptime_sec() : 0;
 }
 
