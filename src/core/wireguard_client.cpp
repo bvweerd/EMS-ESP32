@@ -51,18 +51,6 @@ void WireGuardClient::start() {
         LOG_ERROR("WireGuard init failed");
         return;
     }
-    // Allow traffic to the peer network through the tunnel.
-    ip_addr_t addr, mask, network;
-    if (ipaddr_aton(config_.address, &addr) == 1 && ipaddr_aton(config_.netmask, &mask) == 1) {
-        network.type      = IPADDR_TYPE_V4;
-        network.u_addr.ip4.addr = ip_2_ip4(&addr)->addr & ip_2_ip4(&mask)->addr;
-        char network_str[IP4ADDR_STRLEN_MAX];
-        ip4addr_ntoa_r(ip_2_ip4(&network), network_str, sizeof(network_str));
-        esp_err_t route_err = esp_wireguard_add_allowed_ip(&ctx_, network_str, config_.netmask);
-        if (route_err != ESP_OK) {
-            LOG_WARNING("WireGuard allow route failed: %s (%d)", esp_err_to_name(route_err), route_err);
-        }
-    }
     LOG_INFO("Connecting to %s:%u", config_.endpoint, config_.port);
     ip_addr_set_zero(&config_.endpoint_ip);
     esp_err_t err = esp_wireguard_connect(&ctx_);
@@ -105,6 +93,18 @@ void WireGuardClient::loop() {
     if (up && !connected_) {
         connected_ = true;
         LOG_INFO("WireGuard connection established");
+        // Ensure routing to the WireGuard network exists once the tunnel is up.
+        ip_addr_t addr, mask, network;
+        if (ipaddr_aton(config_.address, &addr) == 1 && ipaddr_aton(config_.netmask, &mask) == 1) {
+            network.type      = IPADDR_TYPE_V4;
+            network.u_addr.ip4.addr = ip_2_ip4(&addr)->addr & ip_2_ip4(&mask)->addr;
+            char network_str[IP4ADDR_STRLEN_MAX];
+            ip4addr_ntoa_r(ip_2_ip4(&network), network_str, sizeof(network_str));
+            esp_err_t route_err = esp_wireguard_add_allowed_ip(&ctx_, network_str, config_.netmask);
+            if (route_err != ESP_OK) {
+                LOG_WARNING("WireGuard allow route failed: %s (%d)", esp_err_to_name(route_err), route_err);
+            }
+        }
     } else if (!up && connected_) {
         connected_ = false;
         LOG_WARNING("WireGuard connection lost");
